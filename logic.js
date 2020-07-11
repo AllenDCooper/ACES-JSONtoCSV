@@ -1,29 +1,40 @@
 var fs = require("fs");
 var ACESData = require("./json/aces2.json");
+var ACESPostData = require("./json/acespost2.json");
 
-var CSV = []
-var headerString = "CourseID, UserID, LastUpdated, Name, isComplete, DSInfoSaved, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, Gender Identity, Hispanic, American Indian or Alaskan Native, Asian, Black or African American, Native Hawaiian or Other Pacific Islander, White, International or foreign national, Started college at this institution, Current college credits, Enrolled for 12 or more credits, Birth year, Parents highest level of education, Expected level of education"
-var dataString = headerString
+var CSV = [];
+var headerString = "CourseID, UserID, LastUpdated, Name, isComplete, DSInfoSaved, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, Gender Identity, Hispanic, American Indian or Alaskan Native, Asian, Black or African American, Native Hawaiian or Other Pacific Islander, White, International or foreign national, Started college at this institution, Current college credits, Enrolled for 12 or more credits, Birth year, Parents highest level of education, Expected level of education";
 
-function writeCSV(string) {
-    fs.writeFile("ACES_CSV.txt", string, function(err) {
+function writeCSV(string, errorString, fileName, errorFileName) {
+    fs.writeFile(fileName, string, function (err) {
         // If the code experiences any errors it will log the error to the console.
         if (err) {
-        return console.log(err);
+            return console.log(err);
         }
-        console.log("ACES_CSV.txt was updated!");
+        console.log(`${fileName} was updated!`);
     });
-}
+    fs.writeFile(errorFileName, errorString, function (err) {
+        // If the code experiences any errors it will log the error to the console.
+        if (err) {
+            return console.log(err);
+        }
+        console.log(`${errorFileName} was updated!`);
+    });
+};
 
 function convertDate(unixDate) {
     var unixts = unixDate;
     var date = new Date(unixts);
     return date.toISOString()
-}
+};
 
-function createCSV (json){
+function createCSV(json, fileName, errorFileName) {
+
+    var dataString = headerString;
+    var errorString = headerString;
+
     json.ACES_Data.forEach(element => {
-        
+
         // user & institutional data
         var courseID = element.CourseId;
         var userID = element.UserId;
@@ -67,9 +78,14 @@ function createCSV (json){
         var Parents_highest_level_of_education = valueDataParsed.demographics['Parents highest level of education'];
         var Expected_level_of_education = valueDataParsed.demographics['Expected level of education'];
 
-        dataString += `\r\n ${courseID}, ${userID}, ${lastUpdated}, ${name}, ${isComplete}, ${DSInfoSaved}, ${ACES2}, ${ACES3}, ${ACES4}, ${ACES5}, ${ACES6}, ${ACES7}, ${ACES8}, ${ACES9}, ${ACES10}, ${ACES11}, ${ACES12}, ${ACES13}, ${Gender_Identity}, ${Hispanic}, ${American_Indian_or_Alaskan_Native}, ${Asian}, ${Black_or_African_American}, ${Native_Hawaiian_or_Other_Pacific_Islander}, ${White}, ${International_or_foreign_national}, ${Started_college_at_this_institution}, ${Current_college_credits}, ${Enrolled_for_12_or_more_credits}, ${Birth_year}, ${Parents_highest_level_of_education}, ${Expected_level_of_education}`
+        if (ACES2 < 6 || ACES2 > 36 || ACES3 < 8 || ACES3 > 48 || ACES4 < 9 || ACES4 > 54 || ACES5 < 7 || ACES5 > 42 || ACES6 < 7 || ACES6 > 42 || ACES7 < 7 || ACES7 > 42 || ACES8 < 6 || ACES8 > 36 || ACES9 < 7 || ACES9 > 42 || ACES10 < 7 || ACES10 > 42 || ACES11 < 7 || ACES11 > 42 || ACES12 < 7 || ACES12 > 42 || ACES13 < 7 || ACES13 > 42) {
+            errorString += `\r\n ${courseID}, ${userID}, ${lastUpdated}, ${name}, ${isComplete}, ${DSInfoSaved}, ${ACES2}, ${ACES3}, ${ACES4}, ${ACES5}, ${ACES6}, ${ACES7}, ${ACES8}, ${ACES9}, ${ACES10}, ${ACES11}, ${ACES12}, ${ACES13}, ${Gender_Identity}, ${Hispanic}, ${American_Indian_or_Alaskan_Native}, ${Asian}, ${Black_or_African_American}, ${Native_Hawaiian_or_Other_Pacific_Islander}, ${White}, ${International_or_foreign_national}, ${Started_college_at_this_institution}, ${Current_college_credits}, ${Enrolled_for_12_or_more_credits}, ${Birth_year}, ${Parents_highest_level_of_education}, ${Expected_level_of_education}`
+        } else {
+            dataString += `\r\n ${courseID}, ${userID}, ${lastUpdated}, ${name}, ${isComplete}, ${DSInfoSaved}, ${ACES2}, ${ACES3}, ${ACES4}, ${ACES5}, ${ACES6}, ${ACES7}, ${ACES8}, ${ACES9}, ${ACES10}, ${ACES11}, ${ACES12}, ${ACES13}, ${Gender_Identity}, ${Hispanic}, ${American_Indian_or_Alaskan_Native}, ${Asian}, ${Black_or_African_American}, ${Native_Hawaiian_or_Other_Pacific_Islander}, ${White}, ${International_or_foreign_national}, ${Started_college_at_this_institution}, ${Current_college_credits}, ${Enrolled_for_12_or_more_credits}, ${Birth_year}, ${Parents_highest_level_of_education}, ${Expected_level_of_education}`
+        }
     });
-    writeCSV(dataString)
-}
+    writeCSV(dataString, errorString, fileName, errorFileName);
+};
 
-createCSV(ACESData);
+createCSV(ACESData, "ACES_CSV.txt", "ACES_ERROR_CSV.txt");
+createCSV(ACESPostData, "ACESPOST_CSV.txt", "ACESPOST_ERROR_CSV.txt");
